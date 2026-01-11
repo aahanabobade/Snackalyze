@@ -14,7 +14,7 @@ df["Digestive_Issues_Num"] = df["Digestive_Issues"].map({"Yes": 1, "No": 0})
 # -------------------
 st.sidebar.title("Snackalyze 🍟")
 st.sidebar.write("🍟 Bite. Track. Improve.")
-st.sidebar.write("Analyze your snacking habits & see how fast food impacts your health!")
+#st.sidebar.write("Analyze your snacking habits & see how fast food impacts your health!")
 
 # Navigation
 page = st.sidebar.radio("Navigate", ["Dashboard", "Insights", "Data"])
@@ -107,6 +107,32 @@ if page == "Dashboard":
     st.title("🍟 Snackalyze Dashboard")
     st.write("Interactive visualization of fast food consumption and health metrics.")
 
+    st.markdown(
+    f"""
+    <div style="
+        background-color:#f5f7fa;
+        padding:10px 15px;
+        border-radius:8px;
+        margin-bottom:15px;
+        font-size:14px;
+        color:#333;
+    ">
+        <b>Active Filters:</b>
+        Gender: {gender_filter} |
+        Age: {age_range[0]}–{age_range[1]} |
+        BMI: {bmi_range[0]}–{bmi_range[1]} |
+        Fast Food: {fastfood_range[0]}–{fastfood_range[1]} |
+        Digestive Issues: {digestive_filter}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+    if len(filtered_df) == 0:
+        st.warning("No data available for the selected filters. Try adjusting them.")
+        st.stop()
+
+
     if len(filtered_df) > 0:
         # BMI vs Fast Food Meals
         st.subheader("Fast Food Meals vs Average BMI")
@@ -115,6 +141,45 @@ if page == "Dashboard":
                           markers=True, line_shape="spline", template="simple_white",
                           title="BMI vs Fast Food Meals")
         st.plotly_chart(fig_bmi, use_container_width=True)
+
+        # -------------------
+        # Health Risk Indicator
+        # -------------------
+        avg_fastfood = filtered_df["Fast_Food_Meals_Per_Week"].mean()
+        avg_bmi = filtered_df["BMI"].mean()
+
+        if avg_fastfood > 10 and avg_bmi > 27:
+            risk = "🔴 High Risk"
+            risk_msg = "High fast food intake and BMI detected. Consider lifestyle changes."
+        elif (6 <= avg_fastfood <= 10) or (24 <= avg_bmi <= 27):
+            risk = "🟡 Moderate Risk"
+            risk_msg = "Moderate health risk. Small improvements can make a big difference."
+        else:
+            risk = "🟢 Low Risk"
+            risk_msg = "Great balance! Your habits look healthy."
+
+        st.markdown(
+            f"""
+            <div style="
+                background: linear-gradient(135deg, #fdfbfb, #ebedee);
+                padding: 20px;
+                border-radius: 16px;
+                box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+                text-align: center;
+                margin-bottom: 20px;
+            ">
+                <h2>{risk}</h2>
+                <p style="font-size:16px;">{risk_msg}</p>
+                <p style="color:gray;">
+                    Avg Fast Food Meals: {avg_fastfood:.1f} | Avg BMI: {avg_bmi:.1f}
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+
+
 
         # Calories vs Fast Food Meals
         st.subheader("Fast Food Meals vs Average Daily Calories")
@@ -143,12 +208,90 @@ if page == "Dashboard":
         col2.metric("Lowest BMI", f"{round(lowest_bmi['BMI'],2)} at {lowest_bmi['Fast_Food_Meals_Per_Week']} meals/week")
         col3.metric("Average Energy", round(avg_energy,2))
 
+        # -------------------
+        # 🧠 Auto Insight Generator
+        # -------------------
+        st.subheader("🧠 Smart Health Insights")
+
+        if len(filtered_df) > 0:
+            avg_fastfood = filtered_df["Fast_Food_Meals_Per_Week"].mean()
+            avg_bmi = filtered_df["BMI"].mean()
+            avg_energy = filtered_df["Energy_Level_Score"].mean()
+            avg_sleep = filtered_df["Sleep_Hours_Per_Day"].mean()
+            avg_activity = filtered_df["Physical_Activity_Hours_Per_Week"].mean()
+
+            insights = []
+
+            if avg_fastfood > 9:
+                insights.append("🍔 High fast food consumption is observed, which is linked to higher BMI and lower energy levels.")
+
+            if avg_bmi > 27:
+                insights.append("⚠️ Average BMI is in the overweight range, indicating increased health risk.")
+
+            if avg_energy < 5:
+                insights.append("😴 Energy levels are low, possibly due to poor sleep or unhealthy diet patterns.")
+
+            if avg_sleep < 6:
+                insights.append("🛌 Sleep duration is below recommended levels, which can affect metabolism and focus.")
+
+            if avg_activity < 3:
+                insights.append("🏃 Physical activity is quite low, increasing long-term health risks.")
+
+            if not insights:
+                insights.append("🌱 Great job! Your lifestyle indicators look balanced and healthy.")
+
+            st.markdown(
+                """
+                <div style="
+                    background: linear-gradient(135deg, #d4fc79, #96e6a1);
+                    padding:20px;
+                    border-radius:15px;
+                    box-shadow:0px 6px 18px rgba(0,0,0,0.15);
+                    font-size:16px;
+                ">
+                <h4>📌 Auto Generated Insights</h4>
+                """,
+                unsafe_allow_html=True
+            )
+
+            for i in insights:
+                st.markdown(f"- {i}")
+
+            st.markdown("</div>", unsafe_allow_html=True)
+
+
 # -------------------
 # Insights Page
 # -------------------
 elif page == "Insights":
     st.title("🩺 Health Insights")
     st.write("Analysis of digestive issues, doctor visits, and overall health scores.")
+
+    st.markdown(
+    f"""
+    <div style="
+        background-color:#f5f7fa;
+        padding:10px 15px;
+        border-radius:8px;
+        margin-bottom:15px;
+        font-size:14px;
+        color:#333;
+    ">
+        <b>Active Filters:</b>
+        Gender: {gender_filter} |
+        Age: {age_range[0]}–{age_range[1]} |
+        BMI: {bmi_range[0]}–{bmi_range[1]} |
+        Fast Food: {fastfood_range[0]}–{fastfood_range[1]} |
+        Digestive Issues: {digestive_filter}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+    if len(filtered_df) == 0:
+        st.warning("No data available for the selected filters. Try adjusting them.")
+        st.stop()
+
 
     if len(filtered_df) > 0:
         # Digestive Issues Pie Chart
@@ -177,7 +320,33 @@ elif page == "Insights":
 # Data Page
 # -------------------
 else:
+    
     st.title("📊 Dataset Preview")
+    st.markdown(
+    f"""
+    <div style="
+        background-color:#f5f7fa;
+        padding:10px 15px;
+        border-radius:8px;
+        margin-bottom:15px;
+        font-size:14px;
+        color:#333;
+    ">
+        <b>Active Filters:</b>
+        Gender: {gender_filter} |
+        Age: {age_range[0]}–{age_range[1]} |
+        BMI: {bmi_range[0]}–{bmi_range[1]} |
+        Fast Food: {fastfood_range[0]}–{fastfood_range[1]} |
+        Digestive Issues: {digestive_filter}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+    if len(filtered_df) == 0:
+        st.warning("No data available for the selected filters. Try adjusting them.")
+        st.stop()
+
     st.dataframe(filtered_df)
     st.write(f"Total records: {len(filtered_df)}")
     st.download_button(
@@ -186,3 +355,5 @@ else:
         file_name="filtered_snackalyze_data.csv",
         mime="text/csv"
     )
+
+    
