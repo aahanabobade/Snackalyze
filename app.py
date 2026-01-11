@@ -3,6 +3,15 @@ import pandas as pd
 import plotly.express as px
 import plotly.figure_factory as ff
 
+from dotenv import load_dotenv
+import os
+import google.generativeai as genai
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+model = genai.GenerativeModel("gemini-2.5-flash")
+
+
 # -------------------
 # Load Data
 # -------------------
@@ -208,56 +217,55 @@ if page == "Dashboard":
         col2.metric("Lowest BMI", f"{round(lowest_bmi['BMI'],2)} at {lowest_bmi['Fast_Food_Meals_Per_Week']} meals/week")
         col3.metric("Average Energy", round(avg_energy,2))
 
-        # -------------------
-        # 🧠 Auto Insight Generator
-        # -------------------
-        st.subheader("🧠 Smart Health Insights")
+        st.subheader("🧠 Smart Health Insights (AI Powered)")
 
-        if len(filtered_df) > 0:
-            avg_fastfood = filtered_df["Fast_Food_Meals_Per_Week"].mean()
-            avg_bmi = filtered_df["BMI"].mean()
-            avg_energy = filtered_df["Energy_Level_Score"].mean()
-            avg_sleep = filtered_df["Sleep_Hours_Per_Day"].mean()
-            avg_activity = filtered_df["Physical_Activity_Hours_Per_Week"].mean()
+if st.button("Generate AI Health Insight"):
+    summary = f"""
+    Average fast food meals per week: {round(avg_fastfood,2)}
+    Average BMI: {round(avg_bmi,2)}
+    Average energy level: {round(avg_energy,2)}
+    Average sleep hours: {round(filtered_df["Sleep_Hours_Per_Day"].mean(),2)}
+    Average physical activity hours: {round(filtered_df["Physical_Activity_Hours_Per_Week"].mean(),2)}
+    """
 
-            insights = []
+    prompt = f"""
+You are a friendly AI health coach.
 
-            if avg_fastfood > 9:
-                insights.append("🍔 High fast food consumption is observed, which is linked to higher BMI and lower energy levels.")
+From the data below, generate exactly 2 short, motivating, and practical health tips.
+Each tip must be:
+- One sentence only
+- Actionable
+- Written in a positive tone
+- Start with an emoji
 
-            if avg_bmi > 27:
-                insights.append("⚠️ Average BMI is in the overweight range, indicating increased health risk.")
+Data:
+{summary}
+"""
 
-            if avg_energy < 5:
-                insights.append("😴 Energy levels are low, possibly due to poor sleep or unhealthy diet patterns.")
 
-            if avg_sleep < 6:
-                insights.append("🛌 Sleep duration is below recommended levels, which can affect metabolism and focus.")
+    with st.spinner("Thinking like a nutritionist 🧠🥗..."):
+        response = model.generate_content(prompt)
 
-            if avg_activity < 3:
-                insights.append("🏃 Physical activity is quite low, increasing long-term health risks.")
+        st.success("AI Insight Generated!")
+        tips = response.text.strip().split("\n")
 
-            if not insights:
-                insights.append("🌱 Great job! Your lifestyle indicators look balanced and healthy.")
+        st.markdown(
+            f"""
+            <div style="
+                background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
+                padding:20px;
+                border-radius:15px;
+                box-shadow:0px 6px 18px rgba(0,0,0,0.15);
+                font-size:16px;
+            ">
+            <h4>📌 Auto Generated Insights</h4>
+            {"".join([f"<p>• {tip}</p>" for tip in tips if tip.strip()])}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-            st.markdown(
-                """
-                <div style="
-                    background: linear-gradient(135deg, #d4fc79, #96e6a1);
-                    padding:20px;
-                    border-radius:15px;
-                    box-shadow:0px 6px 18px rgba(0,0,0,0.15);
-                    font-size:16px;
-                ">
-                <h4>📌 Auto Generated Insights</h4>
-                """,
-                unsafe_allow_html=True
-            )
 
-            for i in insights:
-                st.markdown(f"- {i}")
-
-            st.markdown("</div>", unsafe_allow_html=True)
 
 
 # -------------------
