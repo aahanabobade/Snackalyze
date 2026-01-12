@@ -110,6 +110,58 @@ filtered_df = filtered_df[
 ]
 
 # -------------------
+# Health Risk Score (0–100)
+# -------------------
+def calculate_health_risk(row):
+    score = 0
+
+    # BMI
+    if row["BMI"] > 30:
+        score += 25
+    elif row["BMI"] > 25:
+        score += 15
+    elif row["BMI"] > 22:
+        score += 8
+
+    # Fast food
+    if row["Fast_Food_Meals_Per_Week"] > 10:
+        score += 20
+    elif row["Fast_Food_Meals_Per_Week"] > 6:
+        score += 12
+    elif row["Fast_Food_Meals_Per_Week"] > 3:
+        score += 6
+
+    # Sleep
+    if row["Sleep_Hours_Per_Day"] < 5:
+        score += 15
+    elif row["Sleep_Hours_Per_Day"] < 6:
+        score += 10
+    elif row["Sleep_Hours_Per_Day"] < 7:
+        score += 5
+
+    # Physical activity
+    if row["Physical_Activity_Hours_Per_Week"] < 1:
+        score += 10
+    elif row["Physical_Activity_Hours_Per_Week"] < 3:
+        score += 6
+    elif row["Physical_Activity_Hours_Per_Week"] < 5:
+        score += 3
+
+    # Energy
+    if row["Energy_Level_Score"] < 3:
+        score += 10
+    elif row["Energy_Level_Score"] < 5:
+        score += 6
+    elif row["Energy_Level_Score"] < 7:
+        score += 3
+
+    return min(score, 100)
+
+filtered_df["Health_Risk_Score"] = filtered_df.apply(calculate_health_risk, axis=1)
+avg_risk = filtered_df["Health_Risk_Score"].mean()
+
+
+# -------------------
 # Dashboard Page
 # -------------------
 if page == "Dashboard":
@@ -186,7 +238,42 @@ if page == "Dashboard":
             """,
             unsafe_allow_html=True
         )
-        
+
+        # -------------------
+        # Health Risk Score UI
+        # -------------------
+        st.subheader("🚨 Health Risk Score")
+
+        if avg_risk < 40:
+            color = "#2ecc71"
+            level = "Low Risk 🟢"
+        elif avg_risk < 70:
+            color = "#f1c40f"
+            level = "Moderate Risk 🟡"
+        else:
+            color = "#e74c3c"
+            level = "High Risk 🔴"
+
+        st.markdown(
+            f"""
+            <div style="
+                background-color:{color};
+                padding:20px;
+                border-radius:15px;
+                color:white;
+                text-align:center;
+                font-size:22px;
+                box-shadow:0px 4px 12px rgba(0,0,0,0.2);
+                margin-bottom:20px;
+            ">
+                Health Risk Score: {round(avg_risk,1)} / 100  
+                <br><b>{level}</b>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+                
 
 
 
