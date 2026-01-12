@@ -25,8 +25,8 @@ st.sidebar.title("Snackalyze 🍟")
 st.sidebar.write("🍟 Bite. Track. Improve.")
 #st.sidebar.write("Analyze your snacking habits & see how fast food impacts your health!")
 
-# Navigation
-page = st.sidebar.radio("Navigate", ["Dashboard", "Insights", "Data"])
+# Navigation - FIXED: Added "Personalized Health" option
+page = st.sidebar.radio("Navigate", ["Dashboard", "Insights", "Personalized Health", "Data"])
 
 # -------------------
 # Filters
@@ -169,30 +169,29 @@ if page == "Dashboard":
     st.write("Interactive visualization of fast food consumption and health metrics.")
 
     st.markdown(
-    f"""
-    <div style="
-        background-color:#f5f7fa;
-        padding:10px 15px;
-        border-radius:8px;
-        margin-bottom:15px;
-        font-size:14px;
-        color:#333;
-    ">
-        <b>Active Filters:</b>
-        Gender: {gender_filter} |
-        Age: {age_range[0]}–{age_range[1]} |
-        BMI: {bmi_range[0]}–{bmi_range[1]} |
-        Fast Food: {fastfood_range[0]}–{fastfood_range[1]} |
-        Digestive Issues: {digestive_filter}
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        f"""
+        <div style="
+            background-color:#f5f7fa;
+            padding:10px 15px;
+            border-radius:8px;
+            margin-bottom:15px;
+            font-size:14px;
+            color:#333;
+        ">
+            <b>Active Filters:</b>
+            Gender: {gender_filter} |
+            Age: {age_range[0]}–{age_range[1]} |
+            BMI: {bmi_range[0]}–{bmi_range[1]} |
+            Fast Food: {fastfood_range[0]}–{fastfood_range[1]} |
+            Digestive Issues: {digestive_filter}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     if len(filtered_df) == 0:
         st.warning("No data available for the selected filters. Try adjusting them.")
         st.stop()
-
 
     if len(filtered_df) > 0:
         # BMI vs Fast Food Meals
@@ -273,10 +272,6 @@ if page == "Dashboard":
             unsafe_allow_html=True
         )
 
-                
-
-
-
         # Calories vs Fast Food Meals
         st.subheader("Fast Food Meals vs Average Daily Calories")
         fastfood_cal = filtered_df.groupby("Fast_Food_Meals_Per_Week")["Average_Daily_Calories"].mean().reset_index()
@@ -304,18 +299,19 @@ if page == "Dashboard":
         col2.metric("Lowest BMI", f"{round(lowest_bmi['BMI'],2)} at {lowest_bmi['Fast_Food_Meals_Per_Week']} meals/week")
         col3.metric("Average Energy", round(avg_energy,2))
 
+        # FIXED: Properly indented AI insight section
         st.subheader("🧠 Smart Health Insights (AI Powered)")
 
-if st.button("Generate AI Health Insight"):
-    summary = f"""
-    Average fast food meals per week: {round(avg_fastfood,2)}
-    Average BMI: {round(avg_bmi,2)}
-    Average energy level: {round(avg_energy,2)}
-    Average sleep hours: {round(filtered_df["Sleep_Hours_Per_Day"].mean(),2)}
-    Average physical activity hours: {round(filtered_df["Physical_Activity_Hours_Per_Week"].mean(),2)}
-    """
+        if st.button("Generate AI Health Insight"):
+            summary = f"""
+            Average fast food meals per week: {round(avg_fastfood,2)}
+            Average BMI: {round(avg_bmi,2)}
+            Average energy level: {round(avg_energy,2)}
+            Average sleep hours: {round(filtered_df["Sleep_Hours_Per_Day"].mean(),2)}
+            Average physical activity hours: {round(filtered_df["Physical_Activity_Hours_Per_Week"].mean(),2)}
+            """
 
-    prompt = f"""
+            prompt = f"""
 You are a friendly AI health coach.
 
 From the data below, generate exactly 2 short, motivating, and practical health tips.
@@ -329,30 +325,27 @@ Data:
 {summary}
 """
 
+            with st.spinner("Thinking like a nutritionist 🧠🥗..."):
+                response = model.generate_content(prompt)
 
-    with st.spinner("Thinking like a nutritionist 🧠🥗..."):
-        response = model.generate_content(prompt)
+                st.success("AI Insight Generated!")
+                tips = response.text.strip().split("\n")
 
-        st.success("AI Insight Generated!")
-        tips = response.text.strip().split("\n")
-
-        st.markdown(
-            f"""
-            <div style="
-                background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
-                padding:20px;
-                border-radius:15px;
-                box-shadow:0px 6px 18px rgba(0,0,0,0.15);
-                font-size:16px;
-            ">
-            <h4>📌 Auto Generated Insights</h4>
-            {"".join([f"<p>• {tip}</p>" for tip in tips if tip.strip()])}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-
+                st.markdown(
+                    f"""
+                    <div style="
+                        background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
+                        padding:20px;
+                        border-radius:15px;
+                        box-shadow:0px 6px 18px rgba(0,0,0,0.15);
+                        font-size:16px;
+                    ">
+                    <h4>📌 Auto Generated Insights</h4>
+                    {"".join([f"<p>• {tip}</p>" for tip in tips if tip.strip()])}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
 
 # -------------------
@@ -363,30 +356,29 @@ elif page == "Insights":
     st.write("Analysis of digestive issues, doctor visits, and overall health scores.")
 
     st.markdown(
-    f"""
-    <div style="
-        background-color:#f5f7fa;
-        padding:10px 15px;
-        border-radius:8px;
-        margin-bottom:15px;
-        font-size:14px;
-        color:#333;
-    ">
-        <b>Active Filters:</b>
-        Gender: {gender_filter} |
-        Age: {age_range[0]}–{age_range[1]} |
-        BMI: {bmi_range[0]}–{bmi_range[1]} |
-        Fast Food: {fastfood_range[0]}–{fastfood_range[1]} |
-        Digestive Issues: {digestive_filter}
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        f"""
+        <div style="
+            background-color:#f5f7fa;
+            padding:10px 15px;
+            border-radius:8px;
+            margin-bottom:15px;
+            font-size:14px;
+            color:#333;
+        ">
+            <b>Active Filters:</b>
+            Gender: {gender_filter} |
+            Age: {age_range[0]}–{age_range[1]} |
+            BMI: {bmi_range[0]}–{bmi_range[1]} |
+            Fast Food: {fastfood_range[0]}–{fastfood_range[1]} |
+            Digestive Issues: {digestive_filter}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     if len(filtered_df) == 0:
         st.warning("No data available for the selected filters. Try adjusting them.")
         st.stop()
-
 
     if len(filtered_df) > 0:
         # Digestive Issues Pie Chart
@@ -411,32 +403,102 @@ elif page == "Insights":
         avg_health = filtered_df["Overall_Health_Score"].mean()
         st.metric("Average Health Score", round(avg_health,2))
 
+
+# -------------------
+# Personalized Health Page
+# -------------------
+elif page == "Personalized Health":
+    st.title("🧍 Personalized Health Predictor")
+    st.write("Enter your details and see how your lifestyle compares to real data.")
+
+    age = st.slider("Your Age", 18, 65, 25)
+    bmi = st.number_input("Your BMI", 15.0, 40.0, 22.0)
+    fast_food = st.slider("Fast Food Meals per Week", 0, 14, 3)
+    sleep = st.slider("Sleep Hours per Day", 3.0, 10.0, 7.0)
+    activity = st.slider("Physical Activity Hours per Week", 0.0, 15.0, 3.0)
+    energy = st.slider("Energy Level (1–10)", 1, 10, 6)
+
+    if st.button("Predict My Lifestyle"):
+        # Find closest matching people in dataset
+        df_copy = df.copy()
+        df_copy["distance"] = (
+            abs(df_copy["Age"] - age) +
+            abs(df_copy["BMI"] - bmi) +
+            abs(df_copy["Fast_Food_Meals_Per_Week"] - fast_food) +
+            abs(df_copy["Sleep_Hours_Per_Day"] - sleep) +
+            abs(df_copy["Physical_Activity_Hours_Per_Week"] - activity) +
+            abs(df_copy["Energy_Level_Score"] - energy)
+        )
+
+        nearest = df_copy.sort_values("distance").head(20)
+
+        avg_health = nearest["Overall_Health_Score"].mean()
+        avg_doctor = nearest["Doctor_Visits_Per_Year"].mean()
+        digestive_risk = nearest["Digestive_Issues"].value_counts(normalize=True).get("Yes", 0) * 100
+
+        st.subheader("🔮 Your Lifestyle Prediction")
+
+        st.markdown(
+            f"""
+            <div style="
+                background:linear-gradient(135deg,#89f7fe,#66a6ff);
+                padding:20px;
+                border-radius:15px;
+                color:#000;
+                font-size:16px;
+            ">
+            🩺 Estimated Health Score: <b>{round(avg_health,1)}/10</b><br>
+            🏥 Expected Doctor Visits/Year: <b>{round(avg_doctor,1)}</b><br>
+            🍽 Digestive Issue Risk: <b>{round(digestive_risk,1)}%</b>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # AI explanation
+        ai_prompt = f"""
+        A person has:
+        Age: {age}
+        BMI: {bmi}
+        Fast food meals/week: {fast_food}
+        Sleep hours/day: {sleep}
+        Physical activity hours/week: {activity}
+        Energy level: {energy}
+
+        Based on this, explain their lifestyle in 2 short motivating sentences.
+        """
+
+        with st.spinner("Analyzing your lifestyle..."):
+            response = model.generate_content(ai_prompt)
+            st.success("AI Lifestyle Summary")
+            st.markdown(response.text)
+
+
 # -------------------
 # Data Page
 # -------------------
 else:
-    
     st.title("📊 Dataset Preview")
     st.markdown(
-    f"""
-    <div style="
-        background-color:#f5f7fa;
-        padding:10px 15px;
-        border-radius:8px;
-        margin-bottom:15px;
-        font-size:14px;
-        color:#333;
-    ">
-        <b>Active Filters:</b>
-        Gender: {gender_filter} |
-        Age: {age_range[0]}–{age_range[1]} |
-        BMI: {bmi_range[0]}–{bmi_range[1]} |
-        Fast Food: {fastfood_range[0]}–{fastfood_range[1]} |
-        Digestive Issues: {digestive_filter}
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        f"""
+        <div style="
+            background-color:#f5f7fa;
+            padding:10px 15px;
+            border-radius:8px;
+            margin-bottom:15px;
+            font-size:14px;
+            color:#333;
+        ">
+            <b>Active Filters:</b>
+            Gender: {gender_filter} |
+            Age: {age_range[0]}–{age_range[1]} |
+            BMI: {bmi_range[0]}–{bmi_range[1]} |
+            Fast Food: {fastfood_range[0]}–{fastfood_range[1]} |
+            Digestive Issues: {digestive_filter}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     if len(filtered_df) == 0:
         st.warning("No data available for the selected filters. Try adjusting them.")
@@ -450,5 +512,3 @@ else:
         file_name="filtered_snackalyze_data.csv",
         mime="text/csv"
     )
-
-    
