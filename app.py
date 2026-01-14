@@ -933,7 +933,7 @@ def main():
     st.markdown("---")
     st.markdown("""
         <div style="text-align: center; color: #666; padding: 2rem 0;">
-            <p>Made with ❤️ using Streamlit | © 2024 Snackalyze</p>
+            <p>Made with ❤️ using Streamlit | © 2026 Snackalyze</p>
             <p style="font-size: 0.85rem;">Data is for demonstration purposes only</p>
         </div>
     """, unsafe_allow_html=True)
